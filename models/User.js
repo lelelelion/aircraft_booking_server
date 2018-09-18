@@ -28,6 +28,10 @@ const User = db.defineModel("User", {
         type: db.STRING(200),
         defaultValue: "",
     },
+    lastToken: {
+        type: db.STRING(200),
+        defaultValue: "",
+    }
 });
 
 module.exports = User;
