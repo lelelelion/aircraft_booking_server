@@ -1,9 +1,8 @@
 const bcrypt = require('bcrypt');
-const jsonwebtoken = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const {
     User
 } = require("../model");
-
 
 const secret = 'aircraft_booking_server_jwt_secret';
 
@@ -68,7 +67,7 @@ const login = async ctx => {
         user.password = undefined;
         let result = {
             user: user,
-            token: jsonwebtoken.sign({
+            token: jwt.sign({
                 data: user,
                 exp: Math.floor(Date.now() / 1000) + (60 * 60 * 2)      // 2 hour
             }, secret),
@@ -79,7 +78,55 @@ const login = async ctx => {
     }
 };
 
+
+/**
+ * 更新用户信息
+ * @param ctx
+ * @returns {Promise<void>}
+ */
+const updateUserInfo = async ctx => {
+    const {body} = ctx.request;
+
+    //密码和头像不可通过这个接口修改
+    delete body.password;
+    delete body.avatar;
+
+    console.log(ctx.user);
+    ctx.easyResponse.success("success");
+};
+
+/**
+ * 根据token获取payload
+ * @param token
+ * @returns {Promise<*>}
+ */
+async function getPayload(token) {
+    let payload;
+    if(token)
+        payload = await jwt.verify(token.split(' ')[1], secret);
+    return payload;
+}
+
+/**
+ * 获取用户的信息
+ * @param ctx
+ * @returns {Promise<void>}
+ */
+const getUserInfo = async ctx => {
+    let user = (await getPayload(ctx.header.authorization)).data;
+    user = await User.findOne({
+        where: {
+            username: user.username
+        }
+    });
+    user.password = undefined;
+    ctx.easyResponse.success(user);
+};
+
+
 module.exports = {
     'POST /register': register,
     'POST /login': login,
+    'POST /updateUserInfo': updateUserInfo,
+    'GET /getUserInfo': getUserInfo,
 };

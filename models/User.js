@@ -8,6 +8,10 @@ const User = db.defineModel("User", {
         type: db.STRING(200),
         defaultValue: "",
     },
+    avatar: {
+        type: db.STRING(100),
+        defaultValue: "",
+    },
     nickname: {
         type: db.STRING(200),
         defaultValue: "",
