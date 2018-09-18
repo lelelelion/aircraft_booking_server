@@ -11,18 +11,18 @@ const CODE_TABLE = {
 function responseBody() {
     return async (ctx, next) => {
         ctx.easyResponse = {
-            success: (data) => {
+            success: (data, msg='') => {
                 ctx.response.type = 'application/json';
                 ctx.response.body = JSON.stringify({
                     code: CODE_TABLE.success,
                     data: data,
-                    msg: ''
+                    msg: msg,
                 });
             },
-            error: (errmsg) => {
+            error: (errmsg, errCode=CODE_TABLE.error) => {
                 ctx.response.type = 'application/json';
                 ctx.response.body = JSON.stringify({
-                    code: CODE_TABLE.error,
+                    code: errCode,
                     msg: errmsg
                 });
             }
