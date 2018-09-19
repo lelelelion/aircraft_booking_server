@@ -33,7 +33,7 @@ const User = db.defineModel("User", {
         defaultValue: "",
     },
     lastToken: {
-        type: db.STRING(200),
+        type: db.STRING(1000),
         defaultValue: "",
     }
 });
