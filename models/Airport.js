@@ -8,8 +8,8 @@ const Airport = db.defineModel("Airport", {
         type: db.STRING(100),
         defaultValue: "",
     },
-    location: {
-        type: db.STRING(500),
+    threeCode: {
+        type: db.STRING(3),
         defaultValue: "",
     }
 });

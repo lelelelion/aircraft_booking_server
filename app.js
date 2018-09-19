@@ -15,7 +15,7 @@ app.use(cors());
 app.use(jwtKoa({
     secret
 }).unless({
-    path: [/^\/register/, /^\/login/, /^\/updateToken/],
+    path: [/^\/register/, /^\/login/, /^\/updateToken/, /^\/getCities/],
 }));
 
 app.use(controller());

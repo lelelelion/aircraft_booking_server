@@ -34,6 +34,7 @@ const {
     User,
     PassengerContact,
     Order,
+    Ticket
 } = module.exports;
 
 const CASCADE = "CASCADE";
@@ -78,7 +79,7 @@ Flight.belongsTo(Airport, {
     foreignKey: "departAirportId",
 });
 Flight.belongsTo(Airport, {
-   foreignKey: "arrivalAirportId",
+    foreignKey: "arrivalAirportId",
 });
 
 
@@ -88,10 +89,6 @@ Flight.belongsTo(Airport, {
 Order.belongsTo(User, {
     foreignKey: "uid",
     onDelete: CASCADE
-});
-Order.belongsTo(Flight, {
-    foreignKey: "flightId",
-    onDelete: CASCADE,
 });
 Order.belongsToMany(PassengerContact, {
     onDelete: CASCADE,
@@ -109,6 +106,22 @@ PassengerContact.belongsTo(User, {
     foreignKey: "uid",
 });
 
+
+/**
+ * Ticket
+ * @param then
+ */
+Ticket.hasMany(Order, {
+    constraints: true,
+    onDelete: CASCADE,
+    foreignKey: 'ticketId',
+});
+
+Ticket.belongsTo(Flight, {
+    constraints: true,
+    onDelete: CASCADE,
+    foreignKey: 'flightId',
+});
 
 module.exports.sync = (then) => {
     db.sync(then);
