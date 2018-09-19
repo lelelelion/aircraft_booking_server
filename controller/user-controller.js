@@ -203,10 +203,59 @@ const updateToken = async ctx => {
     }
 };
 
+
+/**
+ * 修改密码
+ * @param ctx
+ * @returns {Promise<void>}
+ */
+const modifyPassword = async ctx => {
+    let user = (await getPayload(ctx.headers.authorization)).data;
+    let {body} = ctx.request;
+    if (!body.oldPassword || !body.newPassword) {
+        ctx.easyResponse.error("Please input the two require filed: 'oldPassword' and 'newPassword'");
+        return;
+    }
+    let targetUser = await User.findOne({
+        where: {
+            username: user.username,
+        }
+    });
+
+    if (!!targetUser) {
+        if (await bcrypt.compare(body.oldPassword, targetUser.password)) {
+            targetUser.password = await bcrypt.hash(body.newPassword, 5);
+            user = await targetUser.save();
+            if(!!user){         //修改密码成功
+                let token = jwt.sign({
+                    data: {
+                        username: user.username,
+                    },
+                    exp: Math.floor(Date.now() / 1000) + (60 * 60 * 2)      // 2 hour
+                }, secret);
+                targetUser.lastToken = token;
+                await targetUser.save();
+                ctx.easyResponse.success({
+                    token: token,
+                }, "modify password success~");
+            } else {
+                ctx.easyResponse.error("modify password fail!");
+            }
+
+
+        } else {
+            ctx.easyResponse.error("Please input the correct old password!");
+        }
+    } else {
+        ctx.easyResponse.error("Target user not exists!!");
+    }
+};
+
 module.exports = {
     'POST /register': register,
     'POST /login': login,
     'POST /updateUserInfo': updateUserInfo,
     'GET /getUserInfo': getUserInfo,
     'GET /updateToken': updateToken,
+    'POST /modifyPassword': modifyPassword,
 };
