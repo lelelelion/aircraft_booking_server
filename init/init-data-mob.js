@@ -1,5 +1,6 @@
 const model = require('../model');
 const pinyin = require('js-pinyin');
+const generateTicket = require('./generate-ticket');
 const fs = require('fs');
 const {
     City,
@@ -174,6 +175,7 @@ async function getFlightsInfo() {
 const doInitData = async () => {
     await getCityAndAirportInfo();
     await getFlightsInfo();
+    await generateTicket();
     // 执行完成后退出
     process.exit(0);
 };

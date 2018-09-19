@@ -7,6 +7,12 @@ const {
 } = require('../model');
 const moment = require('moment');
 
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array)
+    }
+}
+
 function getChineseWeekDay(weekday){
     switch (weekday) {
         case 1:
@@ -26,6 +32,18 @@ function getChineseWeekDay(weekday){
     }
 }
 
+
+function randomNum(min, max) {
+    switch (arguments.length) {
+        case 1:
+            return (Math.random() * min).toFixed(2);
+        case 2:
+            return (Math.random() * (max - min) + min).toFixed(2);
+        default:
+            return 0;
+    }
+}
+
 async function genarateTicket(flight, startDate, endDate){
     let startMoment = moment(startDate);
     let endMoment = moment(endDate);
@@ -39,8 +57,8 @@ async function genarateTicket(flight, startDate, endDate){
             // 添加头等舱
             let ticket = await Ticket.create({
                 level: 0,
-                price: 100,
-                discount: 0.9,
+                price: flight.distance * randomNum(3.5, 4),
+                discount: randomNum(0.8, 0.99),
                 standbyTicket: 20,
                 effectDate: effectDate,
                 expireDate: expireDate,
@@ -50,8 +68,8 @@ async function genarateTicket(flight, startDate, endDate){
             //添加经济舱
             ticket = await Ticket.create({
                 level: 1,
-                price: 100,
-                discount: 0.9,
+                price: flight.distance * randomNum(2, 2.2),
+                discount: randomNum(0.2, 0.6),
                 standbyTicket: 240,
                 effectDate: effectDate,
                 expireDate: expireDate,
@@ -63,16 +81,13 @@ async function genarateTicket(flight, startDate, endDate){
 }
 
 async function generate() {
-    let flight = await Flight.findOne({
-        where: {
-            id: '009a4f1f-9499-4af0-b53f-46b9f478e753'
-        },
+    let flights = await Flight.findAll({
         include: ['departAirport', 'arrivalAirport', 'airline', 'aircraft']
     });
 
-    console.log(JSON.stringify(flight));
-    await genarateTicket(flight, moment().valueOf(), moment().add(20, 'days').valueOf());
-    process.exit(0);
+    await asyncForEach(flights, async (value) => {
+        await genarateTicket(value, moment().valueOf(), moment().add(5, 'days').valueOf());
+    });
 }
 
-generate();
+module.exports = generate;
