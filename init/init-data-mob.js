@@ -76,20 +76,42 @@ async function getCityAndAirportInfo() {
  * @returns {Promise<void>}
  */
 async function getFlightsInfo() {
+
+    // 先获取到城市之间的距离
+    let data = fs.readFileSync('./flight_main_info.json');
+    let jsonObj = JSON.parse(data);
+    let set = new Set();
+    let distanceDic = {};
+    await asyncForEach(jsonObj, (value, index, arr) => {
+        //过滤一下
+        if (!set.has(`${value.departCity}-${value.arrivalCity}`) &&
+            targetCities.indexOf(value.departCity) >= 0 && targetCities.indexOf(value.arrivalCity) >= 0){
+            set.add(`${value.arrivalCity}-${value.departCity}`);
+            set.add(`${value.departCity}-${value.arrivalCity}`);
+            distanceDic[`${value.arrivalCity}-${value.departCity}`] = value.distance;
+            distanceDic[`${value.departCity}-${value.arrivalCity}`] = value.distance;
+        }
+    });
+
+
     const dir = './flights';
     let files = fs.readdirSync(dir);
     await asyncForEach(files, async value => {    //同步处理每一个json文件
         let data = fs.readFileSync(`${dir}/${value}`);
         let jsonObj = JSON.parse(data);
         await asyncForEach(jsonObj.result, async (value, index) => {      //处理每一个对象
+            let distance = '';
+            if (set.has(`${value.fromCityName}-${value.toCityName}`))
+                distance = distanceDic[`${value.fromCityName}-${value.toCityName}`];
             let flight = await Flight.create({
-                distance: '',
+                distance: distance,
                 punctuality: value.flightRate,
                 duration: value.flightTime,
                 departTime: value.planTime,
                 arrivalTime: value.planArriveTime,
                 fromTerminal: value.fromTerminal,
                 toTerminal: value.toTerminal,
+                week: value.week,
             });
 
             //先查看是否存在航空公司数据
@@ -112,7 +134,7 @@ async function getFlightsInfo() {
                     flightNumber: value.flightNo,
                 }
             });
-            if(!aircraft){
+            if (!aircraft) {
                 aircraft = await Aircraft.create({
                     flightNumber: value.flightNo,
                 });
@@ -127,7 +149,7 @@ async function getFlightsInfo() {
                     threeCode: value.fromAirportCode,
                 },
             });
-            if(!!departAirport) {
+            if (!!departAirport) {
                 flight.departAirportId = departAirport.id;
             } else {
                 console.log('not found: ' + value.fromAirportCode);
@@ -140,13 +162,14 @@ async function getFlightsInfo() {
                 }
             });
 
-            if(!!arrivalAirport)
-               flight.arrivalAirportId = arrivalAirport.id;
+            if (!!arrivalAirport)
+                flight.arrivalAirportId = arrivalAirport.id;
 
             await flight.save();
         });
     })
 }
+
 
 const doInitData = async () => {
     await getCityAndAirportInfo();

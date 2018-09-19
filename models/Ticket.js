@@ -4,9 +4,7 @@ const Ticket = db.defineModel('Ticket', {
     level: {
         type: db.INTEGER,
     },
-    date: {
-        type: db.BIGINT,
-    },
+
     price: {
         type: db.DOUBLE,
     },
@@ -17,6 +15,12 @@ const Ticket = db.defineModel('Ticket', {
     standbyTicket: {
         type: db.INTEGER,
         defaultValue: 0,
+    },
+    effectDate: {
+        type: db.BIGINT,
+    },
+    expireDate: {
+        type: db.BIGINT,
     },
 });
 

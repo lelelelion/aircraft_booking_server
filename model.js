@@ -83,15 +83,19 @@ Aircraft.belongsTo(Airline, {
  */
 Flight.belongsTo(Airline, {
     foreignKey: "companyId",
+    as: 'airline',
 });
 Flight.belongsTo(Aircraft, {
     foreignKey: "aircraftId",
+    as: 'aircraft'
 });
 Flight.belongsTo(Airport, {
     foreignKey: "departAirportId",
+    as: 'departAirport'
 });
 Flight.belongsTo(Airport, {
     foreignKey: "arrivalAirportId",
+    as: 'arrivalAirport',
 });
 
 
@@ -132,6 +136,7 @@ Ticket.belongsTo(Flight, {
     constraints: true,
     onDelete: CASCADE,
     foreignKey: 'flightId',
+    as: 'flight',
 });
 
 module.exports.sync = (then) => {
