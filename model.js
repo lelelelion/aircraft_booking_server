@@ -39,12 +39,18 @@ const {
 
 const CASCADE = "CASCADE";
 
+/**
+ * city
+ */
 City.hasMany(Airport, {
     constraints: true,
     onDelete: CASCADE,
     foreignKey: 'cityId'
 });
 
+/**
+ * Airport
+ */
 Airport.hasMany(CommonContact, {
     constraints: true,
     onDelete: CASCADE,
@@ -60,6 +66,12 @@ Airline.hasMany(CommonContact, {
     foreignKey: 'ownerId',
 });
 Airline.hasMany(Aircraft, {
+    constraints: true,
+    onDelete: CASCADE,
+    foreignKey: 'companyId',
+});
+
+Aircraft.belongsTo(Airline, {
     constraints: true,
     onDelete: CASCADE,
     foreignKey: 'companyId',
@@ -116,7 +128,6 @@ Ticket.hasMany(Order, {
     onDelete: CASCADE,
     foreignKey: 'ticketId',
 });
-
 Ticket.belongsTo(Flight, {
     constraints: true,
     onDelete: CASCADE,

@@ -1,4 +1,3 @@
-const axios = require('axios');
 const model = require('../model');
 const pinyin = require('js-pinyin');
 const fs = require('fs');
@@ -118,6 +117,8 @@ async function getFlightsInfo() {
                     flightNumber: value.flightNo,
                 });
             }
+            aircraft.companyId = airline.id;
+            await aircraft.save();
             flight.setAircraft(aircraft);
 
             // 关联始发机场
@@ -145,36 +146,6 @@ async function getFlightsInfo() {
             await flight.save();
         });
     })
-    // await asyncForEach(targetCities, async (v1, idx1, arr) => {
-    //     await asyncForEach(targetCities, async (v2, idx2, arr) => {
-    //         if (idx1 === idx2)
-    //             return;
-    //
-    //         //先得到v1 ~ v2 的所有航班信息
-    //         console.log(`http://apicloud.mob.com/flight/line/query?key=27f0ed6273924&start=${v1}&end=${v2}`);
-    //         try {
-    //             let res = await axios.get(`http://apicloud.mob.com/flight/line/query?key=27f0ed6273924&start=${v1}&end=${v2}`);
-    //             if (res.retCode === "200") {
-    //                 await asyncForEach(res.result, (value, index) => {
-    //                     Flight.create({
-    //                         distance: '',
-    //                         punctuality: value.flightRate,
-    //                         duration: value.flightTime,
-    //                         departTime: value.planTime,
-    //                         arrivalTime: value.planArriveTime,
-    //                         fromTerminal: value.fromTerminal,
-    //                         toTerminal: value.toTerminal,
-    //                     });
-    //                 });
-    //             } else {
-    //                 console.log('err: ' + res.msg);
-    //             }
-    //         } catch (e) {
-    //             console.log(e);
-    //         }
-    //
-    //     });
-    // })
 }
 
 const doInitData = async () => {
@@ -186,5 +157,3 @@ const doInitData = async () => {
 
 doInitData();
 
-
-// axios.get("http://apicloud.mob.com/flight/line/query?key=27f0ed6273924&start=上海&end=海口");
