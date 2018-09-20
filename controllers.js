@@ -19,6 +19,14 @@ function addMapping(router, mapping) {
                 router.post(path, mapping[url]);
             }
             console.log(`register URL mapping: POST ${path}`);
+        } else if(url.startsWith('DELETE')) {
+            path = url.substring(7);
+            if(Array.isArray(mapping[url])){
+                router.delete(path, ...mapping[url]);
+            } else {
+                router.delete(path, mapping[url]);
+            }
+            console.log(`register URL mapping: DELETE ${path}`);
         } else {
             console.log(`invalid URL: ${url}`);
         }

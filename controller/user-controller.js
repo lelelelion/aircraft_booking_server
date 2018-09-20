@@ -350,13 +350,33 @@ const updatePassengerContact = async ctx => {
     body.uid = undefined;
     body.createAt = undefined;
     body.updateAt = undefined;
-    console.log({...body});
     let affectedCount = (await PassengerContact.update({...body}, {
         where: {
             id: body.id,
         }
     }))[0];
 
+    ctx.easyResponse.success({affectedCount: affectedCount});
+};
+
+
+/**
+ * 删除乘机人信息
+ * @param ctx
+ * @returns {Promise<void>}
+ */
+const deletePassengerContact = async ctx => {
+    let {body} = ctx.request;
+    let user = await checkUser(ctx);
+
+    //检查用户是否有效，并且参数齐备
+    if (!user || !checkParams(ctx, body, ['id']))
+        return;
+    let affectedCount = (await PassengerContact.destroy({
+        where: {
+            id: body.id,
+        }
+    }))[0];
     ctx.easyResponse.success({affectedCount: affectedCount});
 };
 
@@ -369,5 +389,6 @@ module.exports = {
     'POST /modifyPassword': modifyPassword,
     'POST /addPassengerContact': addPassengerContact,
     'GET /getPassengerContacts': getPassengerContacts,
-    'POST /updatePassengerContact': updatePassengerContact
+    'POST /updatePassengerContact': updatePassengerContact,
+    'DELETE /deletePassengerContact': deletePassengerContact,
 };
