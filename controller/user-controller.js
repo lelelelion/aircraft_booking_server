@@ -1,10 +1,41 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const {
-    User
+    User,
+    PassengerContact
 } = require("../model");
 
 const secret = 'aircraft_booking_server_jwt_secret';
+
+async function checkUser(ctx) {
+    let user = (await getPayload(ctx.headers.authorization)).data;
+    if (!user || !user.username) {
+        ctx.easyResponse.error('user not exist');
+        return null;
+    }
+
+    user = await User.findOne({
+        where: {
+            username: user.username,
+        }
+    });
+
+    return user;
+}
+
+function checkParams(ctx, body, args) {
+    let result = true;
+    let errStr = 'these param required: ';
+    args.forEach(value => {
+        if (!body[value])
+            result = false;
+        errStr += `'${value}' `
+    });
+    if (!result) {
+        ctx.easyResponse.error(errStr)
+    }
+    return result;
+}
 
 /**
  * 注册
@@ -226,7 +257,7 @@ const modifyPassword = async ctx => {
         if (await bcrypt.compare(body.oldPassword, targetUser.password)) {
             targetUser.password = await bcrypt.hash(body.newPassword, 5);
             user = await targetUser.save();
-            if(!!user){         //修改密码成功
+            if (!!user) {         //修改密码成功
                 let token = jwt.sign({
                     data: {
                         username: user.username,
@@ -251,6 +282,84 @@ const modifyPassword = async ctx => {
     }
 };
 
+
+/**
+ * 添加乘机人信息
+ */
+const addPassengerContact = async ctx => {
+    let {body} = ctx.request;
+    let user = await checkUser(ctx);
+
+    //检查用户是否有效，并且参数齐备
+    if (!user || !checkParams(ctx, body, ['name', 'certificateType', 'certificateValue']))
+        return;
+
+    //过滤调一些不允许修改的字段
+    body.id = undefined;
+    body.version = undefined;
+    body.uid = undefined;
+    body.createAt = undefined;
+    body.updateAt = undefined;
+    let pc = await PassengerContact.findOne({
+        where: {
+            name: body.name,
+            certificateType: body.certificateType,
+            certificateValue: body.certificateValue,
+        }
+    });
+    if (!!pc) {
+        ctx.easyResponse.error('passenger info already exists!');
+        return;
+    }
+    pc = await PassengerContact.create({...body});
+    await user.addPassengerContact(pc);
+
+    ctx.easyResponse.success(pc, 'add passenger contact success!');
+};
+
+
+/**
+ * 获取乘机人信息列表
+ * @param ctx
+ * @returns {Promise<void>}
+ */
+const getPassengerContacts = async ctx => {
+    let user = await checkUser(ctx);
+    if (!user)
+        return;
+    let result = await user.getPassengerContacts();
+    ctx.easyResponse.success(result);
+};
+
+
+/**
+ * 更新乘机人信息
+ * @param ctx
+ * @returns {Promise<void>}
+ */
+const updatePassengerContact = async ctx => {
+    let {body} = ctx.request;
+    let user = await checkUser(ctx);
+
+    //检查用户是否有效，并且参数齐备
+    if (!user || !checkParams(ctx, body, ['id']))
+        return;
+
+    //过滤调一些不允许修改的字段
+    body.version = undefined;
+    body.uid = undefined;
+    body.createAt = undefined;
+    body.updateAt = undefined;
+    console.log({...body});
+    let affectedCount = (await PassengerContact.update({...body}, {
+        where: {
+            id: body.id,
+        }
+    }))[0];
+
+    ctx.easyResponse.success({affectedCount: affectedCount});
+};
+
 module.exports = {
     'POST /register': register,
     'POST /login': login,
@@ -258,4 +367,7 @@ module.exports = {
     'GET /getUserInfo': getUserInfo,
     'GET /updateToken': updateToken,
     'POST /modifyPassword': modifyPassword,
+    'POST /addPassengerContact': addPassengerContact,
+    'GET /getPassengerContacts': getPassengerContacts,
+    'POST /updatePassengerContact': updatePassengerContact
 };

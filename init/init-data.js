@@ -9,6 +9,8 @@ const {
     Aircraft
 } = model;
 
+
+
 async function getMainInfo() {
     let data = await fs.readFileSync('./flight.json');
     const jsonObj = JSON.parse(data);

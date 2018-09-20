@@ -63,7 +63,7 @@ async function genarateTicket(flight, startDate, endDate){
                 effectDate: effectDate,
                 expireDate: expireDate,
             });
-            await ticket.setFlight(flight);
+            await flight.addTicket([ticket]);
 
             //添加经济舱
             ticket = await Ticket.create({
@@ -74,7 +74,7 @@ async function genarateTicket(flight, startDate, endDate){
                 effectDate: effectDate,
                 expireDate: expireDate,
             });
-            await ticket.setFlight(flight)
+            await flight.addTicket([ticket]);
         }
         startMoment = startMoment.add(1, 'days');
     }
