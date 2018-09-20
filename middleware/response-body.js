@@ -6,6 +6,7 @@
 const CODE_TABLE = {
     success: 0,
     error: -1,
+    not_sufficient_funds: -2,
 };
 
 function responseBody() {

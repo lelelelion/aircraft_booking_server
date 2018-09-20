@@ -1,41 +1,16 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const {
     User,
     PassengerContact
 } = require("../model");
 
-const secret = 'aircraft_booking_server_jwt_secret';
+const {
+    checkPostParams,
+    checkUser,
+    getPayload,
+    generateToken,
+} = require('../util/controller-base-util');
 
-async function checkUser(ctx) {
-    let user = (await getPayload(ctx.headers.authorization)).data;
-    if (!user || !user.username) {
-        ctx.easyResponse.error('user not exist');
-        return null;
-    }
-
-    user = await User.findOne({
-        where: {
-            username: user.username,
-        }
-    });
-
-    return user;
-}
-
-function checkParams(ctx, body, args) {
-    let result = true;
-    let errStr = 'these param required: ';
-    args.forEach(value => {
-        if (!body[value])
-            result = false;
-        errStr += `'${value}' `
-    });
-    if (!result) {
-        ctx.easyResponse.error(errStr)
-    }
-    return result;
-}
 
 /**
  * 注册
@@ -46,10 +21,9 @@ const register = async ctx => {
     const {body} = ctx.request;
 
     // 检查字段是否存在
-    if (!body.username || !body.password) {
-        ctx.easyResponse.error("请求失败，缺少 username 或 password 字段");
+    if(!checkPostParams(ctx, ['username', 'password']))
         return;
-    }
+
     body.password = await bcrypt.hash(body.password, 5);
     let user = await User.findOne({
         where: {
@@ -80,6 +54,8 @@ const register = async ctx => {
  */
 const login = async ctx => {
     const {body} = ctx.request;
+    if(!checkPostParams(ctx, ['username', 'password']))
+        return;
     let user = await User.findOne({
         where: {
             username: body.username,
@@ -96,10 +72,7 @@ const login = async ctx => {
     //验证密码是否匹配
     if (await bcrypt.compare(body.password, user.password)) {
         user.password = undefined;
-        let token = jwt.sign({
-            data: user,
-            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 2)      // 2 hour
-        }, secret);
+        let token = generateToken(user);
         let result = {
             user: user,
             token: token,
@@ -156,17 +129,7 @@ const updateUserInfo = async ctx => {
 };
 
 
-/**
- * 根据token获取payload
- * @param token
- * @returns {Promise<*>}
- */
-async function getPayload(token) {
-    let payload;
-    if (token)
-        payload = await jwt.verify(token.split(' ')[1], secret);
-    return payload;
-}
+
 
 /**
  * 获取用户的信息
@@ -202,10 +165,7 @@ const updateToken = async ctx => {
             if (!!checkUser) {
                 if (checkUser.lastToken === ctx.headers.authorization.split(' ')[1]) {
                     //generate a new token
-                    let token = jwt.sign({
-                        data: user,
-                        exp: Math.floor(Date.now() / 1000) + (60 * 60 * 2)      // 2 hour
-                    }, secret);
+                    let token = generateToken(user);
                     let affectedCount = await User.update({
                         lastToken: token,
                     }, {
@@ -242,11 +202,8 @@ const updateToken = async ctx => {
  */
 const modifyPassword = async ctx => {
     let user = (await getPayload(ctx.headers.authorization)).data;
-    let {body} = ctx.request;
-    if (!body.oldPassword || !body.newPassword) {
-        ctx.easyResponse.error("Please input the two require filed: 'oldPassword' and 'newPassword'");
+    if(!checkPostParams(ctx, ['oldPassword', 'newPassword']))
         return;
-    }
     let targetUser = await User.findOne({
         where: {
             username: user.username,
@@ -258,12 +215,9 @@ const modifyPassword = async ctx => {
             targetUser.password = await bcrypt.hash(body.newPassword, 5);
             user = await targetUser.save();
             if (!!user) {         //修改密码成功
-                let token = jwt.sign({
-                    data: {
-                        username: user.username,
-                    },
-                    exp: Math.floor(Date.now() / 1000) + (60 * 60 * 2)      // 2 hour
-                }, secret);
+                let token = generateToken({
+                    username: user.username,
+                });
                 targetUser.lastToken = token;
                 await targetUser.save();
                 ctx.easyResponse.success({
@@ -291,7 +245,7 @@ const addPassengerContact = async ctx => {
     let user = await checkUser(ctx);
 
     //检查用户是否有效，并且参数齐备
-    if (!user || !checkParams(ctx, body, ['name', 'certificateType', 'certificateValue']))
+    if (!user || !checkPostParams(ctx, ['name', 'certificateType', 'certificateValue']))
         return;
 
     //过滤调一些不允许修改的字段
@@ -342,7 +296,7 @@ const updatePassengerContact = async ctx => {
     let user = await checkUser(ctx);
 
     //检查用户是否有效，并且参数齐备
-    if (!user || !checkParams(ctx, body, ['id']))
+    if (!user || !checkPostParams(ctx, ['id']))
         return;
 
     //过滤调一些不允许修改的字段
@@ -370,7 +324,7 @@ const deletePassengerContact = async ctx => {
     let user = await checkUser(ctx);
 
     //检查用户是否有效，并且参数齐备
-    if (!user || !checkParams(ctx, body, ['id']))
+    if (!user || !checkPostParams(ctx, ['id']))
         return;
     let affectedCount = (await PassengerContact.destroy({
         where: {

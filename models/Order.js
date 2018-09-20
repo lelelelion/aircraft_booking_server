@@ -17,6 +17,9 @@ const Order = db.defineModel("Order", {
         type: db.INTEGER,
         defaultValue: 0,
     },
+    cost: {
+        type: db.INTEGER,
+    }
 });
 
 module.exports = Order;

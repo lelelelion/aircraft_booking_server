@@ -49,7 +49,6 @@ City.hasMany(Airport, {
 });
 
 
-
 /**
  * Airport
  */
@@ -114,12 +113,37 @@ Order.belongsTo(User, {
     foreignKey: "uid",
     onDelete: CASCADE
 });
+User.hasMany(Order, {
+    foreignKey: "uid",
+    onDelete: CASCADE
+});
+
 Order.belongsToMany(PassengerContact, {
-    onDelete: CASCADE,
     through: "Order_Passenger",
     foreignKey: "orderId",
-    otherKey: "passengerContactId"
+    as: 'passengers',
 });
+
+PassengerContact.belongsToMany(Order, {
+    through: "Order_Passenger",
+    foreignKey: 'passengerContactId',
+    as: 'orders'
+});
+
+Order.belongsTo(Ticket, {
+    onDelete: CASCADE,
+    foreignKey: 'ticketId',
+});
+
+/**
+ * Ticket
+ * @param then
+ */
+Ticket.hasMany(Order, {
+    constraints: true,
+    foreignKey: 'ticketId',
+});
+
 
 
 /**
@@ -138,15 +162,7 @@ User.hasMany(PassengerContact, {
 });
 
 
-/**
- * Ticket
- * @param then
- */
-Ticket.hasMany(Order, {
-    constraints: true,
-    onDelete: CASCADE,
-    foreignKey: 'ticketId',
-});
+
 Ticket.belongsTo(Flight, {
     constraints: true,
     onDelete: CASCADE,

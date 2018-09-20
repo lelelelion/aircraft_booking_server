@@ -35,6 +35,13 @@ const User = db.defineModel("User", {
     lastToken: {
         type: db.STRING(1000),
         defaultValue: "",
+    },
+    money: {
+        type: db.INTEGER,
+        defaultValue: 10000000,
+        validate: {
+            min: 0,
+        }
     }
 });
 

@@ -57,7 +57,7 @@ async function genarateTicket(flight, startDate, endDate){
             // 添加头等舱
             let ticket = await Ticket.create({
                 level: 0,
-                price: flight.distance * randomNum(3.5, 4),
+                price: (flight.distance * randomNum(3.5, 4)).toFixed(2),
                 discount: randomNum(0.8, 0.99),
                 standbyTicket: 20,
                 effectDate: effectDate,
@@ -68,7 +68,7 @@ async function genarateTicket(flight, startDate, endDate){
             //添加经济舱
             ticket = await Ticket.create({
                 level: 1,
-                price: flight.distance * randomNum(2, 2.2),
+                price: (flight.distance * randomNum(2, 2.2)).toFixed(2),
                 discount: randomNum(0.2, 0.6),
                 standbyTicket: 240,
                 effectDate: effectDate,
