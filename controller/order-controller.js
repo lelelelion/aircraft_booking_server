@@ -108,7 +108,59 @@ const getOrderDetail = async ctx => {
 };
 
 
+/**
+ * 获取订单列表
+ * @param ctx
+ * @returns {Promise<void>}
+ */
+const getOrders = async ctx => {
+    let user = await checkUser(ctx);
+    if (!user)
+        return;
+    let page = 1;
+    let size = 10;
+    if (!!ctx.query.page)
+        page = parseInt(ctx.query.page);
+    if (!!ctx.query.size)
+        size = parseInt(ctx.query.size);
+
+    console.log(page);
+    console.log(size);
+    let result = await Order.findAll({
+        where: {
+            uid: user.id,
+        },
+        skip: (page - 1) * size,
+        limit: size,
+        include: ['passengers', User, {
+            model: Ticket,
+            include: [Flight]
+        },]
+    });
+    ctx.easyResponse.success(result);
+};
+
+
+/**
+ * 删除订单
+ * @param ctx
+ * @returns {Promise<void>}
+ */
+const deleteOrder = async ctx => {
+    let user = checkUser(ctx);
+    if (!user || !checkPostParams(ctx, ['orderId']))
+        return;
+    let affectedCount = (await Order.destroy({
+        where: {
+            id: ctx.request.body.orderId
+        }
+    }));
+    ctx.easyResponse.success({affectedCount});
+};
+
 module.exports = {
     'POST /generateOrder': generateOrder,
     'GET /getOrderDetail': getOrderDetail,
+    'GET /getOrders': getOrders,
+    'DELETE /deleteOrder': deleteOrder,
 };
