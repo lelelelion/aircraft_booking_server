@@ -1,13 +1,11 @@
-
+const {
+    CODE_TABLE
+} = require('../config/err-code-table');
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////// 当前中间件的职能是为ctx对象添加一个easyResponse成员，可以便捷的返回Json格式化的信息
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const CODE_TABLE = {
-    success: 0,
-    error: -1,
-    not_sufficient_funds: -2,
-};
+
 
 function responseBody() {
     return async (ctx, next) => {
@@ -32,4 +30,4 @@ function responseBody() {
     }
 }
 
-module.exports = responseBody;
+module.exports = responseBody

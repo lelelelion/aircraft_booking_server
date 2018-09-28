@@ -27,6 +27,10 @@ const PassengerContact = db.defineModel("PassengerContact", {
     email: {
         type: db.STRING,
         defaultValue: "",
+    },
+    isAdult: {
+        type: db.BOOLEAN,
+        defaultValue: true,
     }
 });
 
