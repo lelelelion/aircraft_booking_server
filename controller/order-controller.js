@@ -37,7 +37,7 @@ const generateOrder = async ctx => {
             return;
         }
 
-
+        console.log(body)
         let ticket = await Ticket.findById(body.ticketId);
         // 检查票数是否足够
         if (ticket.standbyTicket < body.passengers.length) {
@@ -124,18 +124,22 @@ const getOrders = async ctx => {
     if (!!ctx.query.size)
         size = parseInt(ctx.query.size);
 
-    console.log(page);
-    console.log(size);
     let result = await Order.findAll({
         where: {
             uid: user.id,
         },
-        skip: (page - 1) * size,
+        offset: (page - 1) * size,
         limit: size,
-        include: ['passengers', User, {
+        include: ['passengers', {
             model: Ticket,
-            include: [Flight]
-        },]
+            include: [{
+                model: Flight,
+                include: ['departAirport', 'arrivalAirport', 'airline', 'aircraft']
+            }]
+        },],
+        order: [
+            ['createdAt', 'DESC']
+        ]
     });
     ctx.easyResponse.success(result);
 };
@@ -162,5 +166,5 @@ module.exports = {
     'POST /generateOrder': generateOrder,
     'GET /getOrderDetail': getOrderDetail,
     'GET /getOrders': getOrders,
-    'DELETE /deleteOrder': deleteOrder,
+    'POST /deleteOrder': deleteOrder,
 };

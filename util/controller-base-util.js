@@ -15,7 +15,7 @@ const secret = 'aircraft_booking_server_jwt_secret';
 async function getPayload(token) {
     let payload;
     if (token)
-        payload = await jwt.verify(token.split(' ')[1], secret);
+        payload = await jwt.decode(token.split(' ')[1], secret);
     return payload;
 }
 

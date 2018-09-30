@@ -344,5 +344,5 @@ module.exports = {
     'POST /addPassengerContact': addPassengerContact,
     'GET /getPassengerContacts': getPassengerContacts,
     'POST /updatePassengerContact': updatePassengerContact,
-    'DELETE /deletePassengerContact': deletePassengerContact,
+    'POST /deletePassengerContact': deletePassengerContact,
 };

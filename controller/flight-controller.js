@@ -55,7 +55,7 @@ const searchAvailableFlight = async ctx => {
                     departAirportId: v1.id,
                     arrivalAirportId: v2.id,
                 },
-                skip: (page - 1) * size,
+                offset: (page - 1) * size,
                 limit: size,
                 include: ['departAirport', 'arrivalAirport', 'airline', 'aircraft', {
                     model: Ticket,
