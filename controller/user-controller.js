@@ -1,12 +1,16 @@
 const bcrypt = require('bcrypt');
 const {
     User,
-    PassengerContact
+    PassengerContact,
+    Order,
+    Ticket,
+    Flight
 } = require("../model");
 const {
     CODE_TABLE
 } = require('../config/err-code-table');
-
+const Sequelize = require('sequelize');
+const {or, and, gt, lt, gte, lte} = Sequelize.Op;
 const {
     checkPostParams,
     checkUser,
@@ -260,13 +264,13 @@ const forgetPassword = async ctx => {
         zone: zone,
         code: code,
     }));
-    if(res.data.status === 200){    // 验证手机号成功
+    if (res.data.status === 200) {    // 验证手机号成功
         let targetUser = await User.findOne({
             where: {
                 phone: phone
             }
         });
-        if(!targetUser){
+        if (!targetUser) {
             ctx.easyResponse.error('用户不存在');
             return;
         }
@@ -391,6 +395,47 @@ const deletePassengerContact = async ctx => {
     ctx.easyResponse.success({affectedCount: affectedCount});
 };
 
+/**
+ * 获取行程(未完成, 且未过期的机票)
+ * @param ctx
+ */
+const getTrips = async ctx => {
+    let user = await checkUser(ctx);
+    if (!user)
+        return;
+    let page = 1;
+    let size = 10;
+    if (!!ctx.query.page)
+        page = parseInt(ctx.query.page);
+    if (!!ctx.query.size)
+        size = parseInt(ctx.query.size);
+    let result = await Order.findAll({
+        where: {
+            uid: user.id,
+            status: 0,
+        },
+        offset: (page - 1) * size,
+        limit: size,
+        include: ['passengers', {
+            model: Ticket,
+            where: {
+                effectDate: {
+                    [gt]: new Date().valueOf()
+                }
+            },
+            include: [{
+                model: Flight,
+                include: ['departAirport', 'arrivalAirport', 'airline', 'aircraft']
+            }]
+        },],
+        order: [
+            ['createdAt', 'DESC']
+        ]
+    });
+    ctx.easyResponse.success(result);
+};
+
+
 module.exports = {
     'POST /register': register,
     'POST /login': login,
@@ -403,4 +448,5 @@ module.exports = {
     'POST /updatePassengerContact': updatePassengerContact,
     'POST /deletePassengerContact': deletePassengerContact,
     'POST /forgetPassword': forgetPassword,
+    'GET /getTrips': getTrips
 };
