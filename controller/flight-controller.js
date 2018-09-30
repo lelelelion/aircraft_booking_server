@@ -63,7 +63,8 @@ const searchAvailableFlight = async ctx => {
                     where: {
                         [and]: [
                             {effectDate: {[lte]: date}},
-                            {expireDate: {[gt]: date}}
+                            {expireDate: {[gt]: date}},
+                            {effectDate: {[gt]: new Date().valueOf()}},
                         ]
                     }
                 }]
