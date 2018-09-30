@@ -1,8 +1,9 @@
 const config = {
-    // database: 'movie_crawler',
-    // username: 'movie',
-    // password: '123456',
-    // host: '210.30.100.171'
+    database: 'aircraft_booking',
+    username: 'aircraft',
+    password: '123456',
+    host: '127.0.0.1',
+    port: '3306'
 };
 
 module.exports = config;

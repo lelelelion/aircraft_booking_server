@@ -3,12 +3,16 @@ const {
     User,
     PassengerContact
 } = require("../model");
+const {
+    CODE_TABLE
+} = require('../config/err-code-table');
 
 const {
     checkPostParams,
     checkUser,
     getPayload,
     generateToken,
+    getPayloadSkipExpired,
 } = require('../util/controller-base-util');
 
 
@@ -155,7 +159,12 @@ const getUserInfo = async ctx => {
  */
 const updateToken = async ctx => {
     if (!!ctx.headers.authorization) {
-        let user = (await getPayload(ctx.headers.authorization)).data;
+        let payload = (await getPayloadSkipExpired(ctx.headers.authorization));
+        if(payload === null){
+            ctx.easyResponse.error("未登陆", CODE_TABLE.not_login);
+            return
+        }
+        let user = payload.data;
         if (!!user) { //如果这是一个格式正确的token，则检查是否与数据库中的一致
             let checkUser = await User.findOne({
                 where: {
