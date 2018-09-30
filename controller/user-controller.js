@@ -15,6 +15,9 @@ const {
     getPayloadSkipExpired,
 } = require('../util/controller-base-util');
 
+const axios = require('axios');
+const querystring = require('querystring');
+
 
 /**
  * 注册
@@ -25,7 +28,7 @@ const register = async ctx => {
     const {body} = ctx.request;
 
     // 检查字段是否存在
-    if(!checkPostParams(ctx, ['username', 'password']))
+    if (!checkPostParams(ctx, ['username', 'password']))
         return;
 
     body.password = await bcrypt.hash(body.password, 5);
@@ -58,7 +61,7 @@ const register = async ctx => {
  */
 const login = async ctx => {
     const {body} = ctx.request;
-    if(!checkPostParams(ctx, ['username', 'password']))
+    if (!checkPostParams(ctx, ['username', 'password']))
         return;
     let user = await User.findOne({
         where: {
@@ -133,8 +136,6 @@ const updateUserInfo = async ctx => {
 };
 
 
-
-
 /**
  * 获取用户的信息
  * @param ctx
@@ -160,7 +161,7 @@ const getUserInfo = async ctx => {
 const updateToken = async ctx => {
     if (!!ctx.headers.authorization) {
         let payload = (await getPayloadSkipExpired(ctx.headers.authorization));
-        if(payload === null){
+        if (payload === null) {
             ctx.easyResponse.error("未登陆", CODE_TABLE.not_login);
             return
         }
@@ -211,7 +212,7 @@ const updateToken = async ctx => {
  */
 const modifyPassword = async ctx => {
     let user = (await getPayload(ctx.headers.authorization)).data;
-    if(!checkPostParams(ctx, ['oldPassword', 'newPassword']))
+    if (!checkPostParams(ctx, ['oldPassword', 'newPassword']))
         return;
     let targetUser = await User.findOne({
         where: {
@@ -242,6 +243,53 @@ const modifyPassword = async ctx => {
         }
     } else {
         ctx.easyResponse.error("Target user not exists!!");
+    }
+};
+
+
+/**
+ * 忘记密码
+ */
+const forgetPassword = async ctx => {
+    if (!checkPostParams(ctx, ['phone', 'oldPassword', 'newPassword', 'code', 'zone']))
+        return;
+    let {phone, oldPassword, newPassword, code, zone} = ctx.request.body;
+    let res = await axios.post('https://webapi.sms.mob.com/sms/verify', querystring.stringify({
+        appkey: '27f0ed6273924',
+        phone: phone,
+        zone: zone,
+        code: code,
+    }));
+    if(res.data.status === 200){    // 验证手机号成功
+        let targetUser = await User.findOne({
+            where: {
+                phone: phone
+            }
+        });
+        if(!targetUser){
+            ctx.easyResponse.error('用户不存在');
+            return;
+        }
+        if (await bcrypt.compare(oldPassword, targetUser.password)) {
+            targetUser.password = await bcrypt.hash(newPassword, 5);
+            user = await targetUser.save();
+            if (!!user) {         //修改密码成功
+                let token = generateToken({
+                    username: user.username,
+                });
+                targetUser.lastToken = token;
+                await targetUser.save();
+                ctx.easyResponse.success({
+                    token: token,
+                }, "modify password success~");
+            } else {
+                ctx.easyResponse.error("修改密码失败");
+            }
+        } else {
+            ctx.easyResponse.error("原密码错误");
+        }
+    } else {    //验证手机号失败
+        ctx.easyResponse.error("验证码错误")
     }
 };
 
@@ -354,4 +402,5 @@ module.exports = {
     'GET /getPassengerContacts': getPassengerContacts,
     'POST /updatePassengerContact': updatePassengerContact,
     'POST /deletePassengerContact': deletePassengerContact,
+    'POST /forgetPassword': forgetPassword,
 };

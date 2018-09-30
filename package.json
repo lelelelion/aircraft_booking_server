@@ -23,6 +23,7 @@
     "morgan": "~1.9.0",
     "mysql2": "^1.6.1",
     "pug": "2.0.0-beta11",
+    "querystring": "^0.2.0",
     "sequelize": "^4.38.1",
     "uuid": "^3.3.2"
   }
