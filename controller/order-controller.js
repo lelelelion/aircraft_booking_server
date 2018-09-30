@@ -205,7 +205,7 @@ const returnTicket = async ctx => {
                 return user.save({transaction: t})
             })
     });
-    ctx.easyResponse.success("", "退票成功")
+    ctx.easyResponse.success({}, "退票成功")
 };
 
 module.exports = {

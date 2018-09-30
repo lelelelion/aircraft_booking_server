@@ -255,9 +255,9 @@ const modifyPassword = async ctx => {
  * 忘记密码
  */
 const forgetPassword = async ctx => {
-    if (!checkPostParams(ctx, ['phone', 'oldPassword', 'newPassword', 'code', 'zone']))
+    if (!checkPostParams(ctx, ['phone', 'newPassword', 'code', 'zone']))
         return;
-    let {phone, oldPassword, newPassword, code, zone} = ctx.request.body;
+    let {phone, newPassword, code, zone} = ctx.request.body;
     let res = await axios.post('https://webapi.sms.mob.com/sms/verify', querystring.stringify({
         appkey: '27f0ed6273924',
         phone: phone,
@@ -274,23 +274,19 @@ const forgetPassword = async ctx => {
             ctx.easyResponse.error('用户不存在');
             return;
         }
-        if (await bcrypt.compare(oldPassword, targetUser.password)) {
-            targetUser.password = await bcrypt.hash(newPassword, 5);
-            user = await targetUser.save();
-            if (!!user) {         //修改密码成功
-                let token = generateToken({
-                    username: user.username,
-                });
-                targetUser.lastToken = token;
-                await targetUser.save();
-                ctx.easyResponse.success({
-                    token: token,
-                }, "modify password success~");
-            } else {
-                ctx.easyResponse.error("修改密码失败");
-            }
+        targetUser.password = await bcrypt.hash(newPassword, 5);
+        user = await targetUser.save();
+        if (!!user) {         //修改密码成功
+            let token = generateToken({
+                username: user.username,
+            });
+            targetUser.lastToken = token;
+            await targetUser.save();
+            ctx.easyResponse.success({
+                token: token,
+            }, "modify password success~");
         } else {
-            ctx.easyResponse.error("原密码错误");
+            ctx.easyResponse.error("修改密码失败");
         }
     } else {    //验证手机号失败
         ctx.easyResponse.error("验证码错误")
