@@ -9,8 +9,8 @@ const PassengerContact = db.defineModel("PassengerContact", {
         defaultValue: "",
     },
     certificateType: {
-        type: db.STRING(100),
-        defaultValue: ""
+        type: db.INTEGER,
+        defaultValue: 0,
     },
     certificateValue: {
         type: db.STRING(100),

@@ -42,6 +42,10 @@ const User = db.defineModel("User", {
         validate: {
             min: 0,
         }
+    },
+    birthday: {
+        type: db.BIGINT,
+        defaultValue: 0
     }
 });
 
