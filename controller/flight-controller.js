@@ -78,7 +78,7 @@ const searchAvailableFlight = async ctx => {
         // let res = parseInt(a.departTime) - parseInt(b.departTime);
         // if(res !== 0)
         //     return res;
-        return getLowTicket(a).price - getLowTicket(b).price;
+        return getLowTicket(a) - getLowTicket(b);
     });
     ctx.easyResponse.success(result);
 };
@@ -88,10 +88,10 @@ function getLowTicket(flight){
     let ticket = flight.tickets;
     if(ticket[0].level === 1){
         console.log('选择： ' + ticket[0].price + ' -> ' + ticket[1].price);
-        return ticket[0];
+        return ticket[0].price * ticket[0].discount;
     } else {
         console.log('选择： ' + ticket[1].price + ' -> ' + ticket[0].price);
-        return ticket[1];
+        return ticket[1].price * ticket[1].discount;
     }
 
 }
