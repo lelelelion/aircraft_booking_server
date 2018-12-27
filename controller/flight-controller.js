@@ -72,9 +72,9 @@ const searchAvailableFlight = async ctx => {
         });
     });
     result.sort((a, b) => {
-        let res = parseInt(a.departTime) - parseInt(b.departTime);
-        if(res !== 0)
-            return res;
+        // let res = parseInt(a.departTime) - parseInt(b.departTime);
+        // if(res !== 0)
+        //     return res;
         return getLowTicket(a) - getLowTicket(b);
     });
     ctx.easyResponse.success(result);
