@@ -87,8 +87,10 @@ const searchAvailableFlight = async ctx => {
 function getLowTicket(flight){
     let ticket = flight.tickets[0];
     if(ticket.level === 1){
+        console.log('选择： ' + ticket[0].price + ' -> ' + ticket[1].price);
         return ticket;
     } else {
+        console.log('选择： ' + ticket[1].price + ' -> ' + ticket[0].price);
         return flight.tickets[1];
     }
 
