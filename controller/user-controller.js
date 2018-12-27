@@ -54,7 +54,7 @@ const register = async ctx => {
         });
         ctx.easyResponse.success(user, 'register user success')
     } else {
-        ctx.easyResponse.error('username already exists')
+        ctx.easyResponse.error('用户名已存在')
     }
 };
 
@@ -76,7 +76,7 @@ const login = async ctx => {
         }
     });
     if (!user) {
-        ctx.easyResponse.error("username not exists");
+        ctx.easyResponse.error("用户名不存在");
         return;
     }
 
@@ -101,7 +101,7 @@ const login = async ctx => {
             }
         });
     } else {
-        ctx.easyResponse.error("password not correct for user: " + body.username);
+        ctx.easyResponse.error("密码错误: " + body.username);
     }
 };
 
@@ -195,10 +195,10 @@ const updateToken = async ctx => {
                         ctx.easyResponse.error("Update token fail");
                     }
                 } else {
-                    ctx.easyResponse.error("The token which you input is too old!");
+                    ctx.easyResponse.error("登录失效，请重新登录");
                 }
             } else {
-                ctx.easyResponse.error("username not exists!");
+                ctx.easyResponse.error("用户名不存在");
             }
         } else {
             ctx.easyResponse.error("Please ensure the token is correct!");
@@ -238,15 +238,15 @@ const modifyPassword = async ctx => {
                     token: token,
                 }, "modify password success~");
             } else {
-                ctx.easyResponse.error("modify password fail!");
+                ctx.easyResponse.error("修改密码失败");
             }
 
 
         } else {
-            ctx.easyResponse.error("Please input the correct old password!");
+            ctx.easyResponse.error("原密码不正确");
         }
     } else {
-        ctx.easyResponse.error("Target user not exists!!");
+        ctx.easyResponse.error("该用户名不存在");
     }
 };
 
@@ -319,7 +319,7 @@ const addPassengerContact = async ctx => {
         }
     });
     if (!!pc) {
-        ctx.easyResponse.error('passenger info already exists!');
+        ctx.easyResponse.error('乘机人信息已存在');
         return;
     }
     pc = await PassengerContact.create({...body});
