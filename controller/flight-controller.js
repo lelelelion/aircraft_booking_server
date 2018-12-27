@@ -66,7 +66,10 @@ const searchAvailableFlight = async ctx => {
                             {expireDate: {[gt]: date}},
                             {effectDate: {[gt]: new Date().valueOf()}},
                         ]
-                    }
+                    },
+                    order: [
+                        ['price', 'DESC']
+                    ]
                 }]
             })));
         });
@@ -82,12 +85,12 @@ const searchAvailableFlight = async ctx => {
 
 
 function getLowTicket(flight){
-    let ticket = flight.tickets[0];
-    if(ticket.level === 1){
-        return ticket;
-    } else {
+    // let ticket = flight.tickets[0];
+    // if(ticket.level === 1){
+    //     return ticket;
+    // } else {
         return flight.tickets[1];
-    }
+    // }
 
 }
 
