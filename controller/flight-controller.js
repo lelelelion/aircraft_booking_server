@@ -78,19 +78,19 @@ const searchAvailableFlight = async ctx => {
         // let res = parseInt(a.departTime) - parseInt(b.departTime);
         // if(res !== 0)
         //     return res;
-        return getLowTicket(a) - getLowTicket(b);
+        return getLowTicket(a).price - getLowTicket(b).price;
     });
     ctx.easyResponse.success(result);
 };
 
 
 function getLowTicket(flight){
-    // let ticket = flight.tickets[0];
-    // if(ticket.level === 1){
-    //     return ticket;
-    // } else {
+    let ticket = flight.tickets[0];
+    if(ticket.level === 1){
+        return ticket;
+    } else {
         return flight.tickets[1];
-    // }
+    }
 
 }
 
