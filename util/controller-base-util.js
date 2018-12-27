@@ -50,7 +50,7 @@ async function checkUser(ctx) {
 
 function checkParams(ctx, body, args) {
     let result = true;
-    let errStr = 'these param required: ';
+    let errStr = '参数缺失: ';
     args.forEach(value => {
         if (!body[value])
             result = false;

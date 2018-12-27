@@ -71,9 +71,25 @@ const searchAvailableFlight = async ctx => {
             })));
         });
     });
+    result.sort((a, b) => {
+        let res = parseInt(a.departTime) - parseInt(b.departTime);
+        if(res !== 0)
+            return res;
+        return getLowTicket(a) - getLowTicket(b);
+    });
     ctx.easyResponse.success(result);
 };
 
+
+function getLowTicket(flight){
+    let ticket = flight.tickets[0];
+    if(ticket.level === 1){
+        return ticket;
+    } else {
+        return flight.tickets[1];
+    }
+
+}
 
 module.exports = {
     'GET /searchAvailableFlight': searchAvailableFlight,
